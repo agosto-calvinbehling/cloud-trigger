@@ -8,7 +8,19 @@ spec:
   ports:
     - protocol: TCP
       port: 80
+      # Note that a Service can map an incoming port to any targetPort.
+      # By default the targetPort will be set to the same value as the port field.
+      # Perhaps more interesting is that targetPort can be a string,
+      # referring to the name of a port in the backend Pods.
+      # The actual port number assigned to that name can be different in each backend Pod.
+      # This offers a lot of flexibility for deploying and evolving your Services.
+      # For example, you can change the port number that pods expose in the next 
+      # version of your backend software, without breaking clients.
       targetPort: 80
+      # NodePort: Exposes the service on each Node’s IP at a static port (the NodePort).
+      # A ClusterIP service, to which the NodePort service will route, is automatically created.
+      # You’ll be able to contact the NodePort service,
+      # from outside the cluster, by requesting <NodeIP>:<NodePort>.
       nodePort: 30062
   type: NodePort
 ---
@@ -25,7 +37,7 @@ spec:
     spec:
       containers:
         - name: thingy
-          image: gcr.io/agosto-k8s-demo/github-agosto-calvinbehling-cloud-trigger:e5f1f7af6aae2bfead99f7ca42ed53f633d18266
+          image: gcr.io/agosto-k8s-demo/github-agosto-calvinbehling-cloud-trigger:2f78472fdb1167a8af969695831e5c0697a1b477
           ports:
           - containerPort: 80
           imagePullPolicy: IfNotPresent
@@ -36,6 +48,7 @@ spec:
               COUNTER=0
               echo 'start'
               while true; do
+                { echo -e 'HTTP/1.1 200 OK\r\n'; cat /index.html; } | nc -l 8080
                 nc -l 80 < /index.html
                 printf 'serviced %d\n' "$COUNTER"
                 COUNTER=$(($COUNTER + 1))
