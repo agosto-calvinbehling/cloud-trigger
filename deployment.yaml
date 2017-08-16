@@ -1,0 +1,42 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: build-trigger
+spec:
+  selector:
+    app: build-trigger
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30062
+  type: NodePort
+---
+apiVersion: apps/v1beta1  # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: build-trigger-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: build-trigger
+    spec:
+      containers:
+        - name: thingy
+          image: gcr.io/agosto-k8s-demo/github-agosto-calvinbehling-cloud-trigger:e5f1f7af6aae2bfead99f7ca42ed53f633d18266
+          ports:
+          - containerPort: 80
+          imagePullPolicy: IfNotPresent
+          command:
+            - bash
+            - '-c'
+            - |
+              COUNTER=0
+              echo 'start'
+              while true; do
+                nc -l 80 < /index.html
+                printf 'serviced %d\n' "$COUNTER"
+                COUNTER=$(($COUNTER + 1))
+              done
