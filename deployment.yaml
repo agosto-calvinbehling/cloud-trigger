@@ -21,8 +21,9 @@ spec:
       # A ClusterIP service, to which the NodePort service will route, is automatically created.
       # You’ll be able to contact the NodePort service,
       # from outside the cluster, by requesting <NodeIP>:<NodePort>.
-      nodePort: 30062
-  type: NodePort
+      # nodePort: 30062
+  # type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: apps/v1beta1  # for versions before 1.6.0 use extensions/v1beta1
 kind: Deployment
